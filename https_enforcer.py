@@ -137,7 +137,7 @@ import sys
 
 from options import Options, ProtocolOptions
 from crawler import Crawler
-from netchecker import NetChecker
+from net_checker import NetChecker
 
 def main():
     options = Options()
@@ -145,7 +145,7 @@ def main():
 
     posts_dir = sys.argv[1]
 
-    crawler = Crawler(options, posts_dir, None)
+    crawler = Crawler(options, posts_dir, 5)
 
     netchecker = NetChecker(options, crawler, 5)
 

@@ -1,6 +1,7 @@
 from queue import Queue
-from threading import Thread
 import os
+
+from job_executor import JobExecutor
 
 def open_file(path):
     with open(path, 'r', encoding='utf-8') as f:
@@ -22,22 +23,33 @@ class CrawlerResult:
         self.path = path
         self.urls = urls
 
-class Crawler:
+class Crawler(JobExecutor):
 
-    def __init__(self, options, dir, net):
+    def __init__(self, options, dir, max_threads):
+        super().__init__(max_threads)
         self.options = options
         self.crawled = Queue()
+        self.files = Queue()
         self.done = False
-        self.total = 0
-        self.progress = 0
+        self.num_files = 0
+        self.num_files_crawled = 0
 
+        # Count files and get their names and paths
         for root, dirs, files in os.walk(dir, topdown=False):
             for name in files:
-                self.total += 1
+                self.num_files += 1
                 path = os.path.join(root, name)
-                Thread(target=self.search_contents, args=(name, path)).start()
-    
-    def search_contents(self, name, path):
+                self.files.put((name, path))
+
+        self.start_job(False, self.run_crawls, (dir,))
+
+    def run_crawls(self, dir):
+        while not self.done:
+            if self.job_available() and not self.files.empty():
+                name, path = self.files.get()
+                self.start_job(True, self.crawl, (name, path,))
+
+    def crawl(self, name, path):
         contents = open_file(path)
 
         contents_length = len(contents)
@@ -67,6 +79,8 @@ class Crawler:
             result = CrawlerResult(name, path, urls)
             self.crawled.put(result)
 
-        self.progress += 1
-        if self.progress == self.total:
+        self.num_files_crawled += 1
+        if self.num_files_crawled == self.num_files:
             self.done = True
+        
+        self.end_job()
