@@ -1,6 +1,5 @@
 import ssl
 import urllib.request
-import time
 
 class Request:
     
@@ -15,7 +14,8 @@ class Request:
                 data=None, 
                 headers={
                     'User-Agent': user_agent
-                }
+                },
+                method = 'HEAD'
             )
             urllib.request.urlopen(req)
             self.success = True

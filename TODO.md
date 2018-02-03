@@ -3,6 +3,5 @@
 * More options
 * Read options from YAML file
 * Save url positions in content to not search another time when replacing
-* PyCurl + cancel in-progress requests
 * Print results
 * Replace in files
