@@ -52,6 +52,7 @@ class NetChecker(JobExecutor):
         url = None
         url_idx = -1
         is_new = False
+        skipped = False
 
         with result.lock:
             url_idx = result.num_urls_queued
@@ -71,6 +72,8 @@ class NetChecker(JobExecutor):
                 self.url_success_cache[url] = req.success
                 self.url_error_cache[url] = req.error_description
         else:
+            skipped = True
+            self.skip_job()
             while url not in self.url_success_cache or url not in self.url_error_cache:
                 self.poll_sleep()
         
@@ -85,4 +88,4 @@ class NetChecker(JobExecutor):
                 result.done = True
                 self.checked.put(result)
         
-        self.end_job()
+        self.end_job(skipped)

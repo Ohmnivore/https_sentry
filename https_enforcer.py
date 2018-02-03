@@ -147,7 +147,7 @@ def main():
     posts_dir = sys.argv[1]
 
     crawler = Crawler(options, posts_dir, 4)
-    net_checker = NetChecker(options, crawler, 4)
+    net_checker = NetChecker(options, crawler, 16)
     printer = Printer(options, net_checker, 4)
 
 main()
