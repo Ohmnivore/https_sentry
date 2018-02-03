@@ -14,8 +14,7 @@ class Request:
                 data=None, 
                 headers={
                     'User-Agent': user_agent
-                },
-                method = 'HEAD'
+                }
             )
             urllib.request.urlopen(req)
             self.success = True
@@ -31,3 +30,6 @@ class Request:
         
         except ssl.CertificateError as e:
             self.error_description = str(e)
+
+        except OSError as e:
+            self.error_description = str(e.strerror)

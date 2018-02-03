@@ -138,6 +138,7 @@ import sys
 from options import Options, ProtocolOptions
 from crawler import Crawler
 from net_checker import NetChecker
+from printer import Printer
 
 def main():
     options = Options()
@@ -145,8 +146,8 @@ def main():
 
     posts_dir = sys.argv[1]
 
-    crawler = Crawler(options, posts_dir, 5)
-
-    netchecker = NetChecker(options, crawler, 5)
+    crawler = Crawler(options, posts_dir, 4)
+    net_checker = NetChecker(options, crawler, 4)
+    printer = Printer(options, net_checker, 4)
 
 main()

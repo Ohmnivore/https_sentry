@@ -4,7 +4,7 @@ from job_executor import JobExecutor
 from wrapper_urllib import Request
 from threading import Lock
 
-class NetCheckerResults:
+class NetCheckerResult:
 
     def __init__(self, crawler_result):
         self.crawler_result = crawler_result
@@ -12,6 +12,7 @@ class NetCheckerResults:
         self.num_urls_queued = 0
         self.num_urls_checked = 0
         self.urls_reached = [False for x in range(self.num_urls)]
+        self.urls_errors = [None for x in range(self.num_urls)]
         self.full_queue = False
         self.done = False
         self.lock = Lock()
@@ -24,14 +25,22 @@ class NetChecker(JobExecutor):
         self.checked = Queue()
         self.checking = None
         self.url_cache = {}
+        self.url_success_cache = {}
+        self.url_error_cache = {}
         self.done = False
         self.start_job(False, self.run_checks, (crawler,))
     
     def run_checks(self, crawler):
         while not crawler.done or not crawler.crawled.empty():
             if self.job_available() and not crawler.crawled.empty():
-                if self.checking == None or self.checking.full_queue:
-                    self.checking = NetCheckerResults(crawler.crawled.get())
+                if self.checking == None:
+                    self.checking = NetCheckerResult(crawler.crawled.get())
+                else:
+                    old_checking = self.checking
+                    old_checking.lock.acquire()
+                    if old_checking.full_queue:
+                        self.checking = NetCheckerResult(crawler.crawled.get())
+                    old_checking.lock.release()
                 self.start_job(True, self.check, (self.checking,))
             self.poll_sleep()
         
@@ -42,29 +51,37 @@ class NetChecker(JobExecutor):
     def check(self, result):
         url = None
         url_idx = -1
+        is_new = False
 
         with result.lock:
+            url_idx = result.num_urls_queued
+            url = result.crawler_result.urls[url_idx]
+
             result.num_urls_queued += 1
             if result.num_urls_queued == result.num_urls:
                 result.full_queue = True
-            url_idx = result.num_urls_checked
-            url = result.crawler_result.urls[url_idx]
-        
-        success = False
 
-        if url in self.url_cache:
-            success = self.url_cache[url]
-        else:
+            if url not in self.url_cache:
+                is_new = True
+                self.url_cache[url] = True
+            
+        if is_new:
             req = Request(url, self.options.user_agent)
-            success = req.success
-            self.url_cache[url] = success
+            with result.lock:
+                self.url_success_cache[url] = req.success
+                self.url_error_cache[url] = req.error_description
+        else:
+            while url not in self.url_success_cache or url not in self.url_error_cache:
+                self.poll_sleep()
         
         with result.lock:
-            result.urls_reached[url_idx] = success
-            print(url, success)
-
             result.num_urls_checked += 1
             if result.num_urls_checked == result.num_urls:
+                for idx in range(result.num_urls):
+                    url = result.crawler_result.urls[idx]
+                    result.urls_reached[idx] = self.url_success_cache[url]
+                    result.urls_errors[idx] = self.url_error_cache[url]
+
                 result.done = True
                 self.checked.put(result)
         

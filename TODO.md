@@ -3,5 +3,4 @@
 * More options
 * Read options from YAML file
 * Save url positions in content to not search another time when replacing
-* Print results
 * Replace in files
