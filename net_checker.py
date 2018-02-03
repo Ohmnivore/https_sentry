@@ -2,6 +2,7 @@ from queue import Queue
 
 from job_executor import JobExecutor
 from wrapper_urllib import Request
+from threading import Lock
 
 class NetCheckerResults:
 
@@ -13,6 +14,7 @@ class NetCheckerResults:
         self.urls_reached = [False for x in range(self.num_urls)]
         self.full_queue = False
         self.done = False
+        self.lock = Lock()
 
 class NetChecker(JobExecutor):
 
@@ -38,11 +40,16 @@ class NetChecker(JobExecutor):
         self.done = True
 
     def check(self, result):
-        result.num_urls_queued += 1
-        if result.num_urls_queued == result.num_urls:
-            result.full_queue = True
+        url = None
+        url_idx = -1
 
-        url = result.crawler_result.urls[result.num_urls_checked]
+        with result.lock:
+            result.num_urls_queued += 1
+            if result.num_urls_queued == result.num_urls:
+                result.full_queue = True
+            url_idx = result.num_urls_checked
+            url = result.crawler_result.urls[url_idx]
+        
         success = False
 
         if url in self.url_cache:
@@ -52,12 +59,13 @@ class NetChecker(JobExecutor):
             success = req.success
             self.url_cache[url] = success
         
-        result.urls_reached[result.num_urls_checked] = success
-        print(url, success)
+        with result.lock:
+            result.urls_reached[url_idx] = success
+            print(url, success)
 
-        result.num_urls_checked += 1
-        if result.num_urls_checked == result.num_urls:
-            result.done = True
-            self.checked.put(result)
+            result.num_urls_checked += 1
+            if result.num_urls_checked == result.num_urls:
+                result.done = True
+                self.checked.put(result)
         
         self.end_job()
