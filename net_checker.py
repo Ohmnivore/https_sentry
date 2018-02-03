@@ -36,11 +36,9 @@ class NetChecker(JobExecutor):
                 if self.checking == None:
                     self.checking = NetCheckerResult(crawler.crawled.get())
                 else:
-                    old_checking = self.checking
-                    old_checking.lock.acquire()
-                    if old_checking.full_queue:
-                        self.checking = NetCheckerResult(crawler.crawled.get())
-                    old_checking.lock.release()
+                    with self.checking.lock:
+                        if self.checking.full_queue:
+                            self.checking = NetCheckerResult(crawler.crawled.get())
                 self.start_job(True, self.check, (self.checking,))
             self.poll_sleep()
         
@@ -65,7 +63,7 @@ class NetChecker(JobExecutor):
             if url not in self.url_cache:
                 is_new = True
                 self.url_cache[url] = True
-            
+        
         if is_new:
             req = Request(url, self.options.user_agent)
             with result.lock:
