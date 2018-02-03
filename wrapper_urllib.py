@@ -31,5 +31,3 @@ class Request:
         
         except ssl.CertificateError as e:
             self.error_description = str(e)
-        
-        time.sleep(0.01)
