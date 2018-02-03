@@ -18,7 +18,8 @@ def trim_url(url):
 
 class CrawlerResult:
 
-    def __init__(self, name, path, urls):
+    def __init__(self, index, name, path, urls):
+        self.index = index
         self.name = name
         self.path = path
         self.urls = urls
@@ -46,10 +47,12 @@ class Crawler(JobExecutor):
     def run_crawls(self, dir):
         while not self.done:
             if self.job_available() and not self.files.empty():
+                index = self.num_files - self.files.qsize()
                 name, path = self.files.get()
-                self.start_job(True, self.crawl, (name, path,))
+                self.start_job(True, self.crawl, (index, name, path,))
+            self.poll_sleep()
 
-    def crawl(self, name, path):
+    def crawl(self, index, name, path):
         contents = open_file(path)
 
         contents_length = len(contents)
@@ -76,7 +79,7 @@ class Crawler(JobExecutor):
             start = end_idx
 
         if len(urls) > 0:
-            result = CrawlerResult(name, path, urls)
+            result = CrawlerResult(index, name, path, urls)
             self.crawled.put(result)
 
         self.num_files_crawled += 1

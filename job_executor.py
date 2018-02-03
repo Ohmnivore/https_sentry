@@ -1,4 +1,5 @@
 from threading import Thread
+import time
 
 class JobExecutor:
 
@@ -16,3 +17,9 @@ class JobExecutor:
 
     def job_available(self):
         return self.num_jobs < self.max_jobs
+
+    def jobs_running(self):
+        return self.num_jobs > 0
+
+    def poll_sleep(self, seconds = 0.01):
+        time.sleep(seconds)
