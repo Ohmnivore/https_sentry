@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from job_executor import JobExecutor
+import utils
 
 class Printer(JobExecutor):
     def __init__(self, options, net_checker, max_threads):
@@ -49,4 +50,22 @@ class Printer(JobExecutor):
 
         print('')
 
+        if self.options.upgrade_save:
+            self.replace(result)
+
         self.end_job()
+
+    def replace(self, result):
+        contents = utils.open_file(result.crawler_result.path)
+        cache = {}
+
+        for idx in range(result.num_urls):
+            src_url = result.crawler_result.src_urls[idx]
+            url = result.crawler_result.urls[idx]
+            success = result.urls_reached[idx]
+
+            if success and url not in cache:
+                cache[url] = True
+                contents = contents.replace(src_url, url)
+
+        utils.save_file(result.crawler_result.path, contents)
