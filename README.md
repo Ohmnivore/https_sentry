@@ -1,5 +1,5 @@
 # Purpose
-This is a Python 3 console application for checking the status of all the URLs of a static Jekyll site.
+This is a Python console application for checking the status of all the URLs of a static Jekyll site.
 
 The primary use-cases are:
 * Identifying dead links (the resource may have moved or disappeared after a post was written)
