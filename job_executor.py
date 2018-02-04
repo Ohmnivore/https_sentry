@@ -25,7 +25,8 @@ class JobExecutor:
                 self.offset -= 1
 
     def skip_job(self):
-        self.offset += 1
+        with self.lock:
+            self.offset += 1
 
     def job_available(self):
         with self.lock:

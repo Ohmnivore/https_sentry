@@ -7,6 +7,12 @@ from job_executor import JobExecutor
 from wrapper_urllib import Request
 from threading import Lock
 
+class NetCheckerURLResult:
+
+    def __init__(self):
+        self.reached = False
+        self.error_description = None
+
 class NetCheckerResult:
 
     def __init__(self, crawler_result):
@@ -14,8 +20,7 @@ class NetCheckerResult:
         self.num_urls = len(self.crawler_result.urls)
         self.num_urls_queued = 0
         self.num_urls_checked = 0
-        self.urls_reached = [False for x in range(self.num_urls)]
-        self.urls_errors = [None for x in range(self.num_urls)]
+        self.urls = [NetCheckerURLResult() for x in range(self.num_urls)]
         self.full_queue = False
         self.done = False
         self.lock = Lock()
@@ -35,9 +40,13 @@ class NetChecker(JobExecutor):
     
     def run_checks(self, crawler):
         while not crawler.done or not crawler.crawled.empty():
-            if self.job_available() and not crawler.crawled.empty():
+            if self.job_available():
                 if self.checking == None:
-                    self.checking = NetCheckerResult(crawler.crawled.get())
+                    if crawler.crawled.empty():
+                        self.poll_sleep()
+                        continue
+                    else:
+                        self.checking = NetCheckerResult(crawler.crawled.get())
                 else:
                     with self.checking.lock:
                         if self.checking.full_queue:
@@ -45,6 +54,12 @@ class NetChecker(JobExecutor):
                 self.start_job(True, self.check, (self.checking,))
             self.poll_sleep()
         
+        if self.checking != None:
+            while not self.checking.full_queue:
+                if self.job_available():
+                    self.start_job(True, self.check, (self.checking,))
+                self.poll_sleep()
+
         while self.jobs_running():
             self.poll_sleep()
         self.done = True
@@ -64,7 +79,7 @@ class NetChecker(JobExecutor):
                 return
 
             url_idx = result.num_urls_queued
-            url = result.crawler_result.urls[url_idx]
+            url = result.crawler_result.urls[url_idx].url
 
             result.num_urls_queued += 1
             if result.num_urls_queued == result.num_urls:
@@ -89,9 +104,9 @@ class NetChecker(JobExecutor):
             result.num_urls_checked += 1
             if result.num_urls_checked == result.num_urls:
                 for idx in range(result.num_urls):
-                    url = result.crawler_result.urls[idx]
-                    result.urls_reached[idx] = self.url_success_cache[url]
-                    result.urls_errors[idx] = self.url_error_cache[url]
+                    url = result.crawler_result.urls[idx].url
+                    result.urls[idx].reached = self.url_success_cache[url]
+                    result.urls[idx].error_description = self.url_error_cache[url]
 
                 result.done = True
                 self.checked.put((result.crawler_result.index, result))

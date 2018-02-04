@@ -6,10 +6,10 @@ upgrade_protocol: https
 
 # Upgrading ###################################################################
 # Whether to perform the protocol substitution
-upgrade: False
+upgrade: True
 # Whether to write the changes to disk
 # Setting this to false will ensure a 'dry run'
-upgrade_save: False
+upgrade_save: True
 
 # Output ######################################################################
 print_only_errors: False

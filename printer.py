@@ -10,6 +10,7 @@ class Printer(JobExecutor):
         self.options = options
         self.done = False
         self.expected_index = 0
+        self.extra_chars = len(self.options.upgrade_protocol.protocol) - len(self.options.protocol.protocol)
         self.start_job(False, self.run_prints, (net_checker,))
 
     def run_prints(self, net_checker):
@@ -35,14 +36,14 @@ class Printer(JobExecutor):
         print(result.crawler_result.name)
 
         for idx in range(result.num_urls):
-            url = result.crawler_result.urls[idx]
-            success = result.urls_reached[idx]
+            url = result.crawler_result.urls[idx].url
+            success = result.urls[idx].reached
 
             if success:
                 if not self.options.print_only_errors:
                     print('  OK ' + url)
             else:
-                error_description = result.urls_errors[idx]
+                error_description = result.urls[idx].error_description
                 to_print = ' ERR ' + url
                 if error_description != None:
                     to_print += ' -> ' + error_description
@@ -57,15 +58,17 @@ class Printer(JobExecutor):
 
     def replace(self, result):
         contents = utils.open_file(result.crawler_result.path)
-        cache = {}
+        offset = 0
 
         for idx in range(result.num_urls):
-            src_url = result.crawler_result.src_urls[idx]
-            url = result.crawler_result.urls[idx]
-            success = result.urls_reached[idx]
+            src_url = result.crawler_result.urls[idx].src_url
+            url = result.crawler_result.urls[idx].url
+            index = result.crawler_result.urls[idx].index + offset
+            success = result.urls[idx].reached
 
-            if success and url not in cache:
-                cache[url] = True
-                contents = contents.replace(src_url, url)
+            if success:
+                offset += self.extra_chars
+                extract = contents[index:]
+                contents = contents[:index] + extract.replace(src_url, url, 1)
 
         utils.save_file(result.crawler_result.path, contents)

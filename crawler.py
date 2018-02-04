@@ -16,13 +16,19 @@ def trim_url(url):
         return url[:-1]
     return url
 
+class CrawlerURLResult:
+
+    def __init__(self, src_url, url, index):
+        self.src_url = src_url
+        self.url = url
+        self.index = index
+
 class CrawlerResult:
 
-    def __init__(self, index, name, path, src_urls, urls):
+    def __init__(self, index, name, path, urls):
         self.index = index
         self.name = name
         self.path = path
-        self.src_urls = src_urls
         self.urls = urls
 
 class Crawler(JobExecutor):
@@ -57,18 +63,17 @@ class Crawler(JobExecutor):
 
     def crawl(self, index, name, path):
         contents = utils.open_file(path)
-        src_urls = []
         urls = []
 
         for match in re.finditer(self.url_regex, contents):
             url = match.group()
             url = trim_url(url)
-            src_urls.append(url)
+            src_url = url
             if self.options.upgrade:
                 url = url.replace(self.options.protocol.full, self.options.upgrade_protocol.full)
-            urls.append(url)
+            urls.append(CrawlerURLResult(src_url, url, match.start()))
 
-        result = CrawlerResult(index, name, path, src_urls, urls)
+        result = CrawlerResult(index, name, path, urls)
         self.crawled.put(result)
 
         self.num_files_crawled += 1
