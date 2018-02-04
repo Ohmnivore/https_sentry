@@ -21,17 +21,21 @@ def trim_url(url):
 
 class CrawlerURLResult:
 
-    def __init__(self, src_url, url, index):
+    def __init__(self, src_url, url, start_index, end_index):
         """
         Args:
             src_url (str): The original URL found in the file.
             url (str): The URL with the upgraded protocol. If protocol
                 upgrading is disabled, it's equivalent to src_url.
-            index (int): The character index of this URL in the file.
+            start_index (int): The index of the first character of this URL in
+                the file.
+            end_index (int): The index of the last character + 1 of this URL
+                in the file.
         """
         self.src_url = src_url
         self.url = url
-        self.index = index
+        self.start_index = start_index
+        self.end_index = end_index
 
 
 class CrawlerResult:
@@ -98,7 +102,14 @@ class Crawler(JobExecutor):
             url = trim_url(url)
             src_url = url
             url = self._upgrade_url(url)
-            urls.append(CrawlerURLResult(src_url, url, match.start()))
+            urls.append(
+                CrawlerURLResult(
+                    src_url,
+                    url,
+                    match.start(),
+                    match.end()
+                )
+            )
 
         result = CrawlerResult(index, name, path, urls)
         self.crawled.put(result)
