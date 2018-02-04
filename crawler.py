@@ -77,9 +77,8 @@ class Crawler(JobExecutor):
 
             start = end_idx
 
-        if len(urls) > 0:
-            result = CrawlerResult(index, name, path, urls)
-            self.crawled.put(result)
+        result = CrawlerResult(index, name, path, urls)
+        self.crawled.put(result)
 
         self.num_files_crawled += 1
         if self.num_files_crawled == self.num_files:

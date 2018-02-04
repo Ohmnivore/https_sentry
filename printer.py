@@ -8,12 +8,18 @@ class Printer(JobExecutor):
         super().__init__(max_threads)
         self.options = options
         self.done = False
+        self.expected_index = 0
         self.start_job(False, self.run_prints, (net_checker,))
 
     def run_prints(self, net_checker):
         while not net_checker.done or not net_checker.checked.empty():
             if self.job_available() and not net_checker.checked.empty():
-                self.start_job(True, self.print, (net_checker.checked.get(),))
+                result = net_checker.checked.get()
+                if result[1].crawler_result.index == self.expected_index:
+                    self.expected_index += 1
+                    self.start_job(True, self.print, (result[1],))
+                else:
+                    net_checker.checked.put(result)
             self.poll_sleep()
         
         while self.jobs_running():
@@ -21,6 +27,10 @@ class Printer(JobExecutor):
         self.done = True
 
     def print(self, result):
+        if result.num_urls == 0:
+            self.end_job()
+            return
+
         print(result.crawler_result.name)
 
         for idx in range(result.num_urls):

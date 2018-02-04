@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from queue import Queue
+from queue import Queue, PriorityQueue
 
 from job_executor import JobExecutor
 from wrapper_urllib import Request
@@ -25,7 +25,7 @@ class NetChecker(JobExecutor):
     def __init__(self, options, crawler, max_threads):
         super().__init__(max_threads)
         self.options = options
-        self.checked = Queue()
+        self.checked = PriorityQueue()
         self.checking = None
         self.url_cache = {}
         self.url_success_cache = {}
@@ -56,6 +56,13 @@ class NetChecker(JobExecutor):
         skipped = False
 
         with result.lock:
+            if result.num_urls == 0:
+                result.full_queue = True
+                result.done = True
+                self.checked.put((result.crawler_result.index, result))
+                self.end_job()
+                return
+
             url_idx = result.num_urls_queued
             url = result.crawler_result.urls[url_idx]
 
@@ -87,6 +94,6 @@ class NetChecker(JobExecutor):
                     result.urls_errors[idx] = self.url_error_cache[url]
 
                 result.done = True
-                self.checked.put(result)
+                self.checked.put((result.crawler_result.index, result))
         
         self.end_job(skipped)
