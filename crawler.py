@@ -66,9 +66,12 @@ class Crawler(JobExecutor):
         self._files = Queue()
         self.done = False
         self._num_files = 0
-        self._num_files_crawled = 0
         self._url_regex = re.compile(options.protocol.full + options.url_regex)
 
+        self._gather_files(crawl_dir)
+        self.start_job(False, self._run_crawls, ())
+
+    def _gather_files(self, crawl_dir):
         # Count files and get their names and paths
         for root, dummy_dirs, files in os.walk(crawl_dir, topdown=False):
             for name in files:
@@ -76,15 +79,15 @@ class Crawler(JobExecutor):
                 path = os.path.join(root, name)
                 self._files.put((name, path))
 
-        self.start_job(False, self._run_crawls, ())
-
     def _run_crawls(self):
-        while not self.done:
-            if self.job_available() and not self._files.empty():
+        while not self._files.empty():
+            if self.job_available():
                 index = self._num_files - self._files.qsize()
                 name, path = self._files.get()
                 self.start_job(True, self._crawl, (index, name, path,))
             self.poll_sleep()
+
+        self.done = True
 
     def _crawl(self, index, name, path):
         contents = utils.open_file(path)
@@ -94,16 +97,19 @@ class Crawler(JobExecutor):
             url = match.group()
             url = trim_url(url)
             src_url = url
-            if self._options.upgrade:
-                url = url.replace(self._options.protocol.full,
-                                  self._options.upgrade_protocol.full)
+            url = self._upgrade_url(url)
             urls.append(CrawlerURLResult(src_url, url, match.start()))
 
         result = CrawlerResult(index, name, path, urls)
         self.crawled.put(result)
 
-        self._num_files_crawled += 1
-        if self._num_files_crawled == self._num_files:
-            self.done = True
-
         self.end_job()
+
+    def _upgrade_url(self, url):
+        if self._options.upgrade:
+            return url.replace(
+                self._options.protocol.full,
+                self._options.upgrade_protocol.full
+            )
+        else:
+            return url
