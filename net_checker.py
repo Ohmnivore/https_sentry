@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from queue import Queue
 
 from job_executor import JobExecutor
