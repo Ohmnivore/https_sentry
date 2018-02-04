@@ -67,9 +67,7 @@ class Crawler(JobExecutor):
         self.done = False
         self._num_files = 0
         self._num_files_crawled = 0
-        # URL-matching regex obtained from https://stackoverflow.com/a/3809435
-        regex = r'(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)'
-        self._url_regex = re.compile(self._options.protocol.full + regex)
+        self._url_regex = re.compile(options.protocol.full + options.url_regex)
 
         # Count files and get their names and paths
         for root, dummy_dirs, files in os.walk(crawl_dir, topdown=False):

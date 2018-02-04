@@ -29,6 +29,9 @@ class Options:
         self.user_agent = None
         self.method = None
 
+        # Regex
+        self.url_regex = None
+
         # Threads
         self.crawler_threads = -1
         self.net_checker_threads = -1
@@ -51,6 +54,9 @@ class Options:
         # HTTP config
         self.user_agent = cfg['user_agent']
         self.method = cfg['method']
+
+        # Regex
+        self.url_regex = cfg['url_regex']
 
         # Threads
         self.crawler_threads = cfg['crawler_threads']

@@ -20,6 +20,12 @@ user_agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:57.0) Gecko/20100101 Fi
 # while a response to GET will also include the body
 method: HEAD
 
+# URL regex ###################################################################
+# The regex used to match URLs, without the protocol prefix (no http(s)://)
+# https_sentry will prepend the appropriate prefix during the crawl
+# This URL-matching regex was obtained from https://stackoverflow.com/a/3809435
+url_regex: (www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)
+
 # Threads #####################################################################
 # Reads files and finds the links
 crawler_threads: 4
