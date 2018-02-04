@@ -16,7 +16,7 @@ class JobExecutor:
         if in_pool:
             with self.lock:
                 self.num_jobs += 1
-        Thread(target = call, args = args).start()
+        Thread(target = call, args = args, daemon = True).start()
 
     def end_job(self, skipped = False):
         with self.lock:
