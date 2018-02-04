@@ -16,10 +16,10 @@ class Request:
             req = urllib.request.Request(
                 self.url,
                 data=None,
+                method=method,
                 headers={
                     'User-Agent': user_agent
                 },
-                method=method
             )
             urllib.request.urlopen(req)
             self.success = True
