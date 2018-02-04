@@ -8,10 +8,11 @@ import re
 from job_executor import JobExecutor
 import utils
 
-def does_terminate(char):
-    return char == '\n' or char == '\r' or char == ' ' or char == '\'' or char == '"' or char == ')' or char == ']' or char == '<'
-
 def trim_url(url):
+    """Removes the '.' if it's the last character.
+
+    For cases where the link is the last word in a sentence.
+    """
     if url[len(url) - 1] == '.':
         return url[:-1]
     return url
@@ -19,6 +20,12 @@ def trim_url(url):
 class CrawlerURLResult:
 
     def __init__(self, src_url, url, index):
+        """
+        Args:
+            src_url (str): The original URL found in the file.
+            url (str): The URL with the upgraded protocol. If protocol upgrading is disabled, it's equivalent to src_url.
+            index (int): The character index of this URL in the file.
+        """
         self.src_url = src_url
         self.url = url
         self.index = index
@@ -26,6 +33,13 @@ class CrawlerURLResult:
 class CrawlerResult:
 
     def __init__(self, index, name, path, urls):
+        """
+        Args:
+            index (int): This file's position in the directory traversal order.
+            name (str): The filename.
+            path (str): The filepath.
+            urls (list of CrawlerURLResult): The found URLs.
+        """
         self.index = index
         self.name = name
         self.path = path
@@ -34,50 +48,56 @@ class CrawlerResult:
 class Crawler(JobExecutor):
 
     def __init__(self, options, dir, max_threads):
+        """
+        Args:
+            options (Options): The global configuration.
+            dir (str): The directory to crawl through.
+            max_threads (int): The maximum amount of threads to use for crawling.
+        """
         super().__init__(max_threads)
-        self.options = options
+        self._options = options
         self.crawled = Queue()
-        self.files = Queue()
+        self._files = Queue()
         self.done = False
-        self.num_files = 0
-        self.num_files_crawled = 0
+        self._num_files = 0
+        self._num_files_crawled = 0
         # URL-matching regex obtained from https://stackoverflow.com/a/3809435
-        self.url_regex = re.compile(self.options.protocol.full + r'(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)')
+        self._url_regex = re.compile(self._options.protocol.full + r'(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)')
 
         # Count files and get their names and paths
         for root, dirs, files in os.walk(dir, topdown=False):
             for name in files:
-                self.num_files += 1
+                self._num_files += 1
                 path = os.path.join(root, name)
-                self.files.put((name, path))
+                self._files.put((name, path))
 
-        self.start_job(False, self.run_crawls, (dir,))
+        self.start_job(False, self._run_crawls, (dir,))
 
-    def run_crawls(self, dir):
+    def _run_crawls(self, dir):
         while not self.done:
-            if self.job_available() and not self.files.empty():
-                index = self.num_files - self.files.qsize()
-                name, path = self.files.get()
-                self.start_job(True, self.crawl, (index, name, path,))
+            if self.job_available() and not self._files.empty():
+                index = self._num_files - self._files.qsize()
+                name, path = self._files.get()
+                self.start_job(True, self._crawl, (index, name, path,))
             self.poll_sleep()
 
-    def crawl(self, index, name, path):
+    def _crawl(self, index, name, path):
         contents = utils.open_file(path)
         urls = []
 
-        for match in re.finditer(self.url_regex, contents):
+        for match in re.finditer(self._url_regex, contents):
             url = match.group()
             url = trim_url(url)
             src_url = url
-            if self.options.upgrade:
-                url = url.replace(self.options.protocol.full, self.options.upgrade_protocol.full)
+            if self._options.upgrade:
+                url = url.replace(self._options.protocol.full, self._options.upgrade_protocol.full)
             urls.append(CrawlerURLResult(src_url, url, match.start()))
 
         result = CrawlerResult(index, name, path, urls)
         self.crawled.put(result)
 
-        self.num_files_crawled += 1
-        if self.num_files_crawled == self.num_files:
+        self._num_files_crawled += 1
+        if self._num_files_crawled == self._num_files:
             self.done = True
         
         self.end_job()
