@@ -54,3 +54,11 @@ class Options:
         self.crawler_threads = cfg['crawler_threads']
         self.net_checker_threads = cfg['net_checker_threads']
         self.printer_threads = cfg['printer_threads']
+
+        # Validation
+        if self.protocol.protocol == self.upgrade_protocol.protocol:
+            self.upgrade = False
+            self.upgrade_save = False
+        
+        if not self.upgrade:
+            self.upgrade_save = False
