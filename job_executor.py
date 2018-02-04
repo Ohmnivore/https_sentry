@@ -4,6 +4,7 @@
 from threading import Thread, Lock
 import time
 
+
 class JobExecutor:
 
     def __init__(self, max_jobs):
@@ -11,14 +12,14 @@ class JobExecutor:
         self._max_jobs = max_jobs
         self._offset = 0
         self._lock = Lock()
-    
+
     def start_job(self, in_pool, call, args):
         if in_pool:
             with self._lock:
                 self._num_jobs += 1
-        Thread(target = call, args = args, daemon = True).start()
+        Thread(target=call, args=args, daemon=True).start()
 
-    def end_job(self, skipped = False):
+    def end_job(self, skipped=False):
         with self._lock:
             self._num_jobs -= 1
             if skipped:
@@ -36,5 +37,5 @@ class JobExecutor:
         with self._lock:
             return self._num_jobs > 0
 
-    def poll_sleep(self, seconds = 0.01):
+    def poll_sleep(self, seconds=0.01):
         time.sleep(seconds)

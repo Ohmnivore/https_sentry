@@ -4,8 +4,9 @@
 import ssl
 import urllib.request
 
+
 class Request:
-    
+
     def __init__(self, url, user_agent, method):
         self.success = False
         self.error_description = None
@@ -13,12 +14,12 @@ class Request:
 
         try:
             req = urllib.request.Request(
-                self.url, 
-                data = None, 
-                headers = {
+                self.url,
+                data=None,
+                headers={
                     'User-Agent': user_agent
                 },
-                method = method
+                method=method
             )
             urllib.request.urlopen(req)
             self.success = True
@@ -31,7 +32,7 @@ class Request:
 
         except ssl.SSLError as e:
             self.error_description = str(e.reason)
-        
+
         except ssl.CertificateError as e:
             self.error_description = str(e)
 

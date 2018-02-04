@@ -8,8 +8,9 @@ import re
 from job_executor import JobExecutor
 import utils
 
+
 def trim_url(url):
-    """Removes the '.' if it's the last character.
+    """Removes '.' if it's the last character.
 
     For cases where the link is the last word in a sentence.
     """
@@ -17,18 +18,21 @@ def trim_url(url):
         return url[:-1]
     return url
 
+
 class CrawlerURLResult:
 
     def __init__(self, src_url, url, index):
         """
         Args:
             src_url (str): The original URL found in the file.
-            url (str): The URL with the upgraded protocol. If protocol upgrading is disabled, it's equivalent to src_url.
+            url (str): The URL with the upgraded protocol. If protocol
+                upgrading is disabled, it's equivalent to src_url.
             index (int): The character index of this URL in the file.
         """
         self.src_url = src_url
         self.url = url
         self.index = index
+
 
 class CrawlerResult:
 
@@ -45,6 +49,7 @@ class CrawlerResult:
         self.path = path
         self.urls = urls
 
+
 class Crawler(JobExecutor):
 
     def __init__(self, options, crawl_dir, max_threads):
@@ -52,7 +57,8 @@ class Crawler(JobExecutor):
         Args:
             options (Options): The global configuration.
             crawl_dir (str): The directory to crawl through.
-            max_threads (int): The maximum amount of threads to use for crawling.
+            max_threads (int): The maximum amount of threads to use for
+                crawling.
         """
         super().__init__(max_threads)
         self._options = options
@@ -91,7 +97,8 @@ class Crawler(JobExecutor):
             url = trim_url(url)
             src_url = url
             if self._options.upgrade:
-                url = url.replace(self._options.protocol.full, self._options.upgrade_protocol.full)
+                url = url.replace(self._options.protocol.full,
+                                  self._options.upgrade_protocol.full)
             urls.append(CrawlerURLResult(src_url, url, match.start()))
 
         result = CrawlerResult(index, name, path, urls)

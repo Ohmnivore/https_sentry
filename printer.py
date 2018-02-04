@@ -4,13 +4,17 @@
 from job_executor import JobExecutor
 import utils
 
+
 class Printer(JobExecutor):
+
     def __init__(self, options, net_checker, max_threads):
         super().__init__(max_threads)
         self._options = options
         self.done = False
         self._expected_index = 0
-        self._extra_chars = len(self._options.upgrade_protocol.protocol) - len(self._options.protocol.protocol)
+        len_upgrade = len(self._options.upgrade_protocol.protocol)
+        len_original = len(self._options.protocol.protocol)
+        self._extra_chars = len_upgrade - len_original
         self.start_job(False, self._run_prints, (net_checker,))
 
     def _run_prints(self, net_checker):
@@ -23,7 +27,7 @@ class Printer(JobExecutor):
                 else:
                     net_checker.checked.put(result)
             self.poll_sleep()
-        
+
         while self.jobs_running():
             self.poll_sleep()
         self.done = True
@@ -45,7 +49,7 @@ class Printer(JobExecutor):
             else:
                 error_description = result.urls[idx].error_description
                 to_print = ' ERR ' + url
-                if error_description != None:
+                if error_description is not None:
                     to_print += ' -> ' + error_description
                 print(to_print)
 

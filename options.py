@@ -3,14 +3,16 @@
 
 import yaml
 
+
 class ProtocolOptions:
 
     def __init__(self, protocol):
         self.protocol = protocol
         self.full = protocol + '://'
 
+
 class Options:
-    
+
     def __init__(self):
         # Protocols
         self.protocol = None
@@ -59,6 +61,6 @@ class Options:
         if self.protocol.protocol == self.upgrade_protocol.protocol:
             self.upgrade = False
             self.upgrade_save = False
-        
+
         if not self.upgrade:
             self.upgrade_save = False

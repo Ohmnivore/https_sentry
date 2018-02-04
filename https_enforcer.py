@@ -13,9 +13,11 @@ from net_checker import NetChecker
 from printer import Printer
 import utils
 
+
 class Shutdown(Exception):
     """This exception is used to react to shutdown signals"""
     pass
+
 
 def shutdown(_signum, _frame):
     """Handles shutdown signals.
@@ -24,6 +26,7 @@ def shutdown(_signum, _frame):
         Shutdown
     """
     raise Shutdown
+
 
 def main(argv):
     """The application entry point.
@@ -62,7 +65,8 @@ def main(argv):
     printer = Printer(options, net_checker, options.printer_threads)
 
     # Keep the main thread alive until completion or signal
-    # All other threads run in daemon mode and will terminate along with the main thread
+    # All other threads run in daemon mode and will terminate
+    # along with the main thread
     main_job = JobExecutor(0)
     try:
         while not printer.done:
