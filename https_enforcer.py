@@ -52,8 +52,7 @@ def main(argv):
         config_path = argv[2]
 
     # Read options from config file
-    options = Options()
-    options.from_yaml(utils.open_file(config_path))
+    options = Options(utils.open_file(config_path))
 
     # Register signal handlers
     signal.signal(signal.SIGTERM, shutdown)

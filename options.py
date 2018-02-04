@@ -13,31 +13,7 @@ class ProtocolOptions:
 
 class Options:
 
-    def __init__(self):
-        # Protocols
-        self.protocol = None
-        self.upgrade_protocol = None
-
-        # Upgrading
-        self.upgrade = False
-        self.upgrade_save = False
-
-        # Output
-        self.print_only_errors = False
-
-        # HTTP config
-        self.user_agent = None
-        self.method = None
-
-        # Regex
-        self.url_regex = None
-
-        # Threads
-        self.crawler_threads = -1
-        self.net_checker_threads = -1
-        self.printer_threads = -1
-
-    def from_yaml(self, contents):
+    def __init__(self, contents):
         cfg = yaml.load(contents)
 
         # Protocols
