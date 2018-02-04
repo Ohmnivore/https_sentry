@@ -1,6 +1,7 @@
 # TODO
 * Detect encapsulation: [http], (http), 'http', "http", _http_, __http__, *http*, **http**, ~~http~~, `http`
-* More options
-* Read options from YAML file
-* Save url positions in content to not search another time when replacing
+* Regex for URLs
 * Replace in files
+* Handle CTRL-C
+* Save url positions in content to not search another time when replacing
+* Printer should use CrawlerResult index for ordering

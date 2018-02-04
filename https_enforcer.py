@@ -139,15 +139,28 @@ from options import Options, ProtocolOptions
 from crawler import Crawler
 from net_checker import NetChecker
 from printer import Printer
+import utils
 
 def main():
-    options = Options()
-    options.protocol = ProtocolOptions('http')
+    argc = len(sys.argv)
+    if argc != 2 and argc != 3:
+        print('Usage: https_sentry <files directory> <optional: config file>')
+        print('')
+        print('       If no config file is specified https_sentry will look')
+        print('       for "config.yaml" in the current working directory.')
+        print('')
+        exit(1)
 
     posts_dir = sys.argv[1]
+    config_path = 'config.yaml'
+    if argc == 3:
+        config_path = sys.argv[2]
 
-    crawler = Crawler(options, posts_dir, 4)
-    net_checker = NetChecker(options, crawler, 16)
-    printer = Printer(options, net_checker, 4)
+    options = Options()
+    options.from_yaml(utils.open_file(config_path))
+
+    crawler = Crawler(options, posts_dir, options.crawler_threads)
+    net_checker = NetChecker(options, crawler, options.net_checker_threads)
+    printer = Printer(options, net_checker, options.printer_threads)
 
 main()

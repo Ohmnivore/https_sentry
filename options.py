@@ -1,3 +1,5 @@
+import yaml
+
 class ProtocolOptions:
 
     def __init__(self, protocol):
@@ -7,10 +9,45 @@ class ProtocolOptions:
 class Options:
     
     def __init__(self):
-        self.user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:57.0) Gecko/20100101 Firefox/57.0'
+        # Protocols
         self.protocol = None
         self.upgrade_protocol = None
+
+        # Upgrading
+        self.upgrade = False
         self.upgrade_save = False
+
+        # Output
         self.print_only_errors = False
-        self.do_upgrade = False
-        self.do_upgrade_save = False
+
+        # HTTP config
+        self.user_agent = None
+        self.method = None
+
+        # Threads
+        self.crawler_threads = -1
+        self.net_checker_threads = -1
+        self.printer_threads = -1
+
+    def from_yaml(self, contents):
+        cfg = yaml.load(contents)
+
+        # Protocols
+        self.protocol = ProtocolOptions(cfg['protocol'])
+        self.upgrade_protocol = ProtocolOptions(cfg['upgrade_protocol'])
+
+        # Upgrading
+        self.upgrade = cfg['upgrade']
+        self.upgrade_save = cfg['upgrade_save']
+
+        # Output
+        self.print_only_errors = cfg['print_only_errors']
+
+        # HTTP config
+        self.user_agent = cfg['user_agent']
+        self.method = cfg['method']
+
+        # Threads
+        self.crawler_threads = cfg['crawler_threads']
+        self.net_checker_threads = cfg['net_checker_threads']
+        self.printer_threads = cfg['printer_threads']

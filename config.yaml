@@ -1,0 +1,29 @@
+# Protocols ###################################################################
+# The protocol of the links to search for
+protocol: http
+# The protocol to use instead
+upgrade_protocol: https
+
+# Upgrading ###################################################################
+# Whether to perform the protocol substitution
+upgrade: False
+# Whether to write the changes to disk
+# Setting this to false will ensure a 'dry run'
+upgrade_save: False
+
+# Output ######################################################################
+print_only_errors: False
+
+# HTTP config #################################################################
+user_agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:57.0) Gecko/20100101 Firefox/57.0
+# HEAD will make the server send only the header,
+# while a response to GET will also include the body
+method: HEAD
+
+# Threads #####################################################################
+# Reads files and finds the links
+crawler_threads: 4
+# Checks the links
+net_checker_threads: 16
+# Prints output and saves the files
+printer_threads: 4

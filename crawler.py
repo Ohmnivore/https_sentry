@@ -2,11 +2,7 @@ from queue import Queue
 import os
 
 from job_executor import JobExecutor
-
-def open_file(path):
-    with open(path, 'r', encoding='utf-8') as f:
-        contents = f.read()
-    return contents
+import utils
 
 def does_terminate(char):
     return char == '\n' or char == '\r' or char == ' ' or char == '\'' or char == '"' or char == ')' or char == ']' or char == '<'
@@ -53,7 +49,7 @@ class Crawler(JobExecutor):
             self.poll_sleep()
 
     def crawl(self, index, name, path):
-        contents = open_file(path)
+        contents = utils.open_file(path)
 
         contents_length = len(contents)
         search_str = self.options.protocol.full
@@ -72,7 +68,7 @@ class Crawler(JobExecutor):
                 end_idx += 1
             
             url = trim_url(contents[start:end_idx])
-            if self.options.do_upgrade:
+            if self.options.upgrade:
                 url = url.replace(self.options.protocol.full, self.options.upgrade_protocol.full)
             urls.append(url)
 

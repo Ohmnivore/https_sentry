@@ -20,7 +20,8 @@ class Printer(JobExecutor):
             success = result.urls_reached[idx]
 
             if success:
-                print('  OK ' + url)
+                if not self.options.print_only_errors:
+                    print('  OK ' + url)
             else:
                 error_description = result.urls_errors[idx]
                 to_print = ' ERR ' + url

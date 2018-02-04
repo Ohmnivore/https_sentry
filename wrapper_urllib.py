@@ -3,7 +3,7 @@ import urllib.request
 
 class Request:
     
-    def __init__(self, url, user_agent):
+    def __init__(self, url, user_agent, method):
         self.success = False
         self.error_description = None
         self.url = url
@@ -11,10 +11,11 @@ class Request:
         try:
             req = urllib.request.Request(
                 self.url, 
-                data=None, 
-                headers={
+                data = None, 
+                headers = {
                     'User-Agent': user_agent
-                }
+                },
+                method = method
             )
             urllib.request.urlopen(req)
             self.success = True

@@ -65,7 +65,7 @@ class NetChecker(JobExecutor):
                 self.url_cache[url] = True
         
         if is_new:
-            req = Request(url, self.options.user_agent)
+            req = Request(url, self.options.user_agent, self.options.method)
             with result.lock:
                 self.url_success_cache[url] = req.success
                 self.url_error_cache[url] = req.error_description
