@@ -2,8 +2,10 @@
 This is a Python 3 console application for checking the status of all the URLs of a static Jekyll site.
 
 The primary use-cases are:
-* Identifying dead links (page may have moved or disappeared after a post was written)
-* Identifying which links can be upgraded from **HTTP** to **HTTPS**
+* Identifying dead links (the resource may have moved or disappeared after a post was written)
+* Identifying which links can be upgraded from **HTTP** to **HTTPS** (the host may have acquired **HTTPS** support after a post was written)
+
+These checks come in handy for general blog maintenance.
 
 # Usage
 Run the `https_sentry.py` script with arguments as described:
