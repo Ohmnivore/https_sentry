@@ -3,4 +3,3 @@
 * Regex for URLs
 * Replace in files
 * Save url positions in content to not search another time when replacing
-* Printer should use CrawlerResult index for ordering
