@@ -3,6 +3,7 @@
 
 from queue import Queue
 import os
+import re
 
 from job_executor import JobExecutor
 import utils
@@ -33,6 +34,8 @@ class Crawler(JobExecutor):
         self.done = False
         self.num_files = 0
         self.num_files_crawled = 0
+        # URL-matching regex obtained from https://stackoverflow.com/a/3809435
+        self.url_regex = re.compile(self.options.protocol.full + r'(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)')
 
         # Count files and get their names and paths
         for root, dirs, files in os.walk(dir, topdown=False):
@@ -53,29 +56,14 @@ class Crawler(JobExecutor):
 
     def crawl(self, index, name, path):
         contents = utils.open_file(path)
-
-        contents_length = len(contents)
-        search_str = self.options.protocol.full
-
         urls = []
 
-        start = 0
-        while start < contents_length:
-            start = contents.find(search_str, start)
-
-            if start < 0:
-                break
-
-            end_idx = start + len(search_str)
-            while end_idx < contents_length and not does_terminate(contents[end_idx]):
-                end_idx += 1
-            
-            url = trim_url(contents[start:end_idx])
+        for match in re.finditer(self.url_regex, contents):
+            url = match.group()
+            url = trim_url(url)
             if self.options.upgrade:
                 url = url.replace(self.options.protocol.full, self.options.upgrade_protocol.full)
             urls.append(url)
-
-            start = end_idx
 
         result = CrawlerResult(index, name, path, urls)
         self.crawled.put(result)
